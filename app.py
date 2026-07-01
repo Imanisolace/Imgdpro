@@ -3,29 +3,36 @@ import numpy as np
 import cv2
 from PIL import Image
 import io
+from streamlit_image_comparison import image_comparison
 
-st.set_page_config(page_title="Photo Restorer Pro", layout="wide")
+st.set_page_config(page_title="AI Photo Restorer Pro", layout="wide")
 
-st.title("🧹  Photo Restorer Pro")
-st.write("Remove noise, brighten, and sharpen low-light photos. Powered by PDE-based filters.")
+st.title("🧹 AI Photo Restorer Pro")
+st.write("1-Click AI restoration with pro manual controls. Powered by PDE-based filters.")
 st.caption("Upload any JPG/PNG. No install needed.")
 
-# --- Sidebar Controls ---
-st.sidebar.header("Edit Controls")
-strength = st.sidebar.slider("Noise Removal Strength", 1.0, 10.0, 5.0, 0.5, help="Higher = more noise removed, but can get soft")
-bright = st.sidebar.slider("Brightness Boost", 0.5, 1.5, 1.0, 0.05)
-sharp = st.sidebar.slider("Sharpness", 0.0, 3.0, 1.45, 0.05, help="Brings back details lost during denoising")
-
-uploaded_file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
+def analyze_image(image):
+    """Auto-analyze image and return suggested slider values"""
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    # 1. Noise level: std dev of image. Higher = more noise
+    noise_level = np.std(gray)
+    
+    # 2. Brightness: average pixel value 0-255
+    brightness = np.mean(gray)
+    
+    # 3. Sharpness: variance of Laplacian. Lower = more blurry
+    laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+    
+    # Map metrics to slider values
+    strength = np.clip(noise_level / 8, 3, 15)  # More noise = more denoise
+    bright = np.clip(1.8 - (brightness / 255.0), 0.9, 1.5)  # Darker = brighter
+    sharp = np.clip(5.0 - (laplacian_var / 100.0), 1, 4)  # Blurrier = more sharp
+    
+    return strength, bright, sharp
 
 def denoise_image(image, h, bright_val, sharp_val):
-    """
-    3-step PDE-based denoising pipeline
-    1. NLM = Removes Gaussian noise
-    2. Bilateral = Smooths while keeping edges
-    3. Brighten + Sharpen = Make it look pro
-    """
-    # FIX: Cast floats from slider to int for OpenCV
+    # Cast floats from slider to int for OpenCV
     h = int(round(h))
     sharp_val = int(round(sharp_val))
     
@@ -45,44 +52,64 @@ def denoise_image(image, h, bright_val, sharp_val):
     
     return denoised
 
+uploaded_file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
+
+# Default slider values
+default_strength, default_bright, default_sharp = 7.0, 1.1, 2.0
+
 if uploaded_file is not None:
-    # Load image and convert to OpenCV BGR format
     image = Image.open(uploaded_file).convert("RGB")
     image_np = np.array(image)
     image_bgr = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
+    
+    # Auto button
+    col_btn1, col_btn2 = st.columns([1,4])
+    with col_btn1:
+        if st.button("✨ Auto Enhance", use_container_width=True):
+            s, b, sh = analyze_image(image_bgr)
+            st.session_state.strength = s
+            st.session_state.bright = b
+            st.session_state.sharp = sh
+            st.success(f"Auto set: Denoise={s:.1f}, Bright={b:.2f}, Sharp={sh:.1f}")
 
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.subheader("Original")
-        st.image(image_np, use_column_width=True)
+    # --- Sidebar Controls ---
+    st.sidebar.header("Edit Controls")
+    strength = st.sidebar.slider("Noise Removal Strength", 1.0, 15.0, 
+                                 st.session_state.get("strength", default_strength), 0.5)
+    bright = st.sidebar.slider("Brightness Boost", 0.8, 1.5, 
+                               st.session_state.get("bright", default_bright), 0.05)
+    sharp = st.sidebar.slider("Sharpness", 0.0, 4.0, 
+                              st.session_state.get("sharp", default_sharp), 0.25)
 
     with st.spinner('Restoring photo...'):
         clean_image_bgr = denoise_image(image_bgr, strength, bright, sharp)
-
-    with col2:
-        st.subheader("Restored")
         clean_image_rgb = cv2.cvtColor(clean_image_bgr, cv2.COLOR_BGR2RGB)
-        st.image(clean_image_rgb, use_column_width=True)
+
+    st.subheader("Before vs After")
+    image_comparison(
+        img1=image_np, # Original
+        img2=clean_image_rgb, # Restored
+        label1="Before",
+        label2="After",
+        width=800
+    )
 
     # Download button
     buf = io.BytesIO()
     result_pil = Image.fromarray(clean_image_rgb)
     result_pil.save(buf, format="PNG")
-    byte_im = buf.getvalue()
     
     st.download_button(
         label="📥 Download Restored Image",
-        data=byte_im,
+        data=buf.getvalue(),
         file_name="restored.png",
-        mime="image/png"
+        mime="image/png",
+        use_container_width=True
     )
-    
-    st.success("Done! Use the sliders to fine-tune the result.")
 
 else:
     st.info("👆 Upload an image to get started")
 
 st.sidebar.markdown("---")
-st.sidebar.write("**Need custom image processing?**")
-st.sidebar.write("DM for freelance work: Photo restoration, document cleanup, PDE simulations")
+st.sidebar.write("**Need bulk photo restoration?**")
+st.sidebar.write("DM for freelance PDE image processing")
