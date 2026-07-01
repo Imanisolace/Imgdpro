@@ -25,13 +25,17 @@ def denoise_image(image, h, bright_val, sharp_val):
     2. Bilateral = Smooths while keeping edges
     3. Brighten + Sharpen = Make it look pro
     """
+    # FIX: Cast floats from slider to int for OpenCV
+    h = int(round(h))
+    sharp_val = int(round(sharp_val))
+    
     # Step 1: Fast Non-Local Means. Main denoiser
     denoised = cv2.fastNlMeansDenoisingColored(image, None, h, h, 7, 21)
     
     # Step 2: Bilateral Filter. Keep edges sharp
     denoised = cv2.bilateralFilter(denoised, 5, 50, 50)
     
-    # Step 3a: Brightness/Contrast
+    # Step 3a: Brightness/Contrast. alpha can be float
     denoised = cv2.convertScaleAbs(denoised, alpha=bright_val, beta=0)
     
     # Step 3b: Unsharp Mask for detail
