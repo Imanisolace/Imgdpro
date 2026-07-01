@@ -4,9 +4,9 @@ import cv2
 from PIL import Image
 import io
 
-st.set_page_config(page_title="AI Photo Restorer Pro", layout="wide")
+st.set_page_config(page_title="Photo Restorer Pro", layout="wide")
 
-st.title("🧹 AI Photo Restorer Pro")
+st.title("🧹  Photo Restorer Pro")
 st.write("Remove noise, brighten, and sharpen low-light photos. Powered by PDE-based filters.")
 st.caption("Upload any JPG/PNG. No install needed.")
 
