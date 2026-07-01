@@ -12,8 +12,8 @@ st.caption("Upload any JPG/PNG. No install needed.")
 
 # --- Sidebar Controls ---
 st.sidebar.header("Edit Controls")
-strength = st.sidebar.slider("Noise Removal Strength", 1.0, 15.0, 7.0, 0.5, help="Higher = more noise removed, but can get soft")
-bright = st.sidebar.slider("Brightness Boost", 0.8, 1.5, 1.1, 0.05)
+strength = st.sidebar.slider("Noise Removal Strength", 1.0, 10.0, 5.0, 0.5, help="Higher = more noise removed, but can get soft")
+bright = st.sidebar.slider("Brightness Boost", 0.5, 1.5, 1.0, 0.05)
 sharp = st.sidebar.slider("Sharpness", 0.0, 3.0, 1.5, 0.05, help="Brings back details lost during denoising")
 
 uploaded_file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
