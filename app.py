@@ -39,12 +39,12 @@ def analyze_image_smart(image):
     # Sharpness: Blurry = sharpen, Too Sharp = slight blur
     target_sharp = 200 # "ideal" sharpness
     sharp_diff = target_sharp - laplacian_var
-    sharp = np.clip(2.0 + (sharp_diff / 200.0), 0, 4) # <1.0 means we will blur later
+    sharp = np.clip(2.0 + (sharp_diff / 200.0), 2, 4) # <1.0 means we will blur later
     
     # 4. Anti-plastic check: If strength is high AND face, reduce and add texture back
     anti_plastic = False
-    if has_face and strength > 8:
-        strength = 8 # cap denoise for skin
+    if has_face and strength > 5:
+        strength = 4 # cap denoise for skin
         sharp = max(sharp, 2.5) # add sharpness back to keep skin texture
         anti_plastic = True
         
