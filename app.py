@@ -123,7 +123,7 @@ with tab2:
 with tab3:
     st.subheader("📈 ODE Solver")
     st.write("RK4, Adaptive Euler with error estimation.")
-    st.button("🔒 Unlock in Pro Plan $19/mo", disabled=True)            st.success(f"Solved!")
+    st.button("🔒 Unlock in Pro Plan $19/mo", disabled=True)            
             st.metric("Max Temp Start", f"{max(frames[0]):.3f}")
             st.metric("Max Temp End", f"{max(frames[-1]):.3f}")
 
