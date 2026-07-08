@@ -138,8 +138,8 @@ with col2:
 st.divider()
 
         # 2. PLOT SHOWS SECOND - FOR VISUALS
-        col_plot, col_download = st.columns([3, 1])
-        with col_plot:
+col_plot, col_download = st.columns([3, 1])
+with col_plot:
             st.subheader("📈 Temperature Animation")
             plot_spot = st.empty()
             for i, frame in enumerate(frames):
