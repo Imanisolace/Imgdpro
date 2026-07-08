@@ -118,9 +118,9 @@ with tab1:
 with tab2:
     st.subheader("🎯 Root Finder")
     st.write("Newton-Raphson, Secant, Bisection with convergence plots.")
-    st.button("🔒 Unlock in Pro Plan $19/mo", disabled=True)
+    st.button("🔒 Unlock in Pro Plan $19/mo", disabled=True, key="root_unlock")
 
 with tab3:
     st.subheader("📈 ODE Solver")
     st.write("RK4, Adaptive Euler with error estimation.")
-    st.button("🔒 Unlock in Pro Plan $19/mo", disabled=True)
+    st.button("🔒 Unlock in Pro Plan $19/mo", disabled=True, key="ode_unlock")
