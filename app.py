@@ -121,20 +121,21 @@ with tab1:
         st.success("Simulation Complete!")
         st.session_state.run_solver = False
 
-        # 1. METRICS SHOW FIRST - INSTANT VALUE
-        st.markdown("### 📊 Results Summary")
-        c1, c2, c3, c4 = st.columns(4)
-        with c1:
-            st.metric("Max Temp @ t=0", f"{max(frames[0]):.4f}", "°C")
-        with c2:
-            st.metric("Max Temp @ t=final", f"{max(frames[-1]):.4f}", "°C")
-        with c3:
-            loss = (max(frames[0])-max(frames[-1]))*100
-            st.metric("Energy Loss", f"{loss:.1f}%", f"-{loss:.1f}%")
-        with c4:
-            st.metric("Final Time", f"{T_final:.2f}s")
+       # 1. METRICS SHOW FIRST - 2x2 GRID
+st.markdown("### 📊 Results Summary")
+col1, col2 = st.columns(2) # Force 2 columns
 
-        st.divider()
+loss = (max(frames[0])-max(frames[-1]))*100
+
+with col1:
+    st.metric(label="Max Temp @ t=0", value=f"{max(frames[0]):.4f}", delta="°C")
+    st.metric(label="Energy Loss", value=f"{loss:.1f}%", delta=f"-{loss:.1f}%")
+
+with col2:
+    st.metric(label="Max Temp @ t=final", value=f"{max(frames[-1]):.4f}", delta="°C")
+    st.metric(label="Final Time", value=f"{T_final:.2f}s")
+
+st.divider()
 
         # 2. PLOT SHOWS SECOND - FOR VISUALS
         col_plot, col_download = st.columns([3, 1])
