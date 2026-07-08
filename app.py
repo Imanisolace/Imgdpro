@@ -158,10 +158,12 @@ with tab1:
 
     else:
         st.info("Click 'Solve & Animate' to see results")
-
 with tab2:
     st.subheader("🎯 Root Finder")
-    st.button("🔒 Unlock Pro $19/mo", disabled=True)
+    st.write("Newton-Raphson, Secant, Bisection with convergence plots.")
+    st.button("🔒 Unlock Pro $19/mo", disabled=True, key="root_unlock_btn") # ADD KEY
+
 with tab3:
     st.subheader("📈 ODE Solver")
-    st.button("🔒 Unlock Pro $19/mo", disabled=True)
+    st.write("RK4, Adaptive Euler with error estimation.")
+    st.button("🔒 Unlock Pro $19/mo", disabled=True, key="ode_unlock_btn") # ADD KEY
