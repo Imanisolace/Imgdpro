@@ -20,10 +20,11 @@ st.markdown("""
    .stButton>button {background-color: #FF4B4B; color: white; border-radius: 8px; border: none;}
    .stButton>button:hover {background-color: #FF6B6B;}
    .metric-card {background-color: #262730; padding: 15px; border-radius: 8px; border: 1px solid #333;}
+    [data-testid="stMetric"] {background-color: #1A1C23; padding: 12px; border-radius: 8px; border: 1px solid #333;}
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🔥 Heat Equation Pro v1.3")
+st.title("🔥 Heat Equation Pro v1.4")
 st.caption("Professional 1D FDM Solver with Stability Control. Export-ready plots.")
 
 # SESSION STATE INIT
@@ -31,7 +32,7 @@ if 'alpha' not in st.session_state: st.session_state.alpha = 0.1
 if 'L' not in st.session_state: st.session_state.L = 1.0
 if 'has_run' not in st.session_state: st.session_state.has_run = False
 
-# 2. HERO SECTION FOR NEW USERS - THEY CAN'T MISS THIS
+# 2. HERO SECTION FOR NEW USERS
 if not st.session_state.has_run:
     st.markdown("### Get started in 3 seconds")
     st.info("👈 Step 1: Pick a preset in the sidebar | Step 2: Click Solve below")
@@ -108,7 +109,7 @@ with tab1:
         frames = [u.copy()]
 
         progress_bar = st.progress(0, "Computing FDM...")
-        # FDM SOLVER - RUNS FIRST
+        # FDM SOLVER
         for n in range(Nt):
             u_new = u.copy()
             u_new[1:-1] = u[1:-1] + r * (u[2:] - 2*u[1:-1] + u[:-2])
@@ -121,25 +122,25 @@ with tab1:
         st.success("Simulation Complete!")
         st.session_state.run_solver = False
 
-       # 1. METRICS SHOW FIRST - 2x2 GRID
-st.markdown("### 📊 Results Summary")
-col1, col2 = st.columns(2) # Force 2 columns
+        # 1. METRICS SHOW FIRST - 2x2 GRID WITH COLORS
+        st.markdown("### 📊 Results Summary")
+        col1, col2 = st.columns(2)
 
-loss = (max(frames[0])-max(frames[-1]))*100
+        loss = (max(frames[0])-max(frames[-1]))*100
 
-with col1:
-    st.metric(label="Max Temp @ t=0", value=f"{max(frames[0]):.4f}", delta="°C")
-    st.metric(label="Energy Loss", value=f"{loss:.1f}%", delta=f"-{loss:.1f}%")
+        with col1:
+            st.metric(label="🌡️ Max Temp @ t=0", value=f"{max(frames[0]):.4f}", delta="°C", delta_color="off")
+            st.metric(label="📉 Energy Loss", value=f"{loss:.1f}%", delta=f"-{loss:.1f}%", delta_color="inverse")
 
-with col2:
-    st.metric(label="Max Temp @ t=final", value=f"{max(frames[-1]):.4f}", delta="°C")
-    st.metric(label="Final Time", value=f"{T_final:.2f}s")
+        with col2:
+            st.metric(label="❄️ Max Temp @ t=final", value=f"{max(frames[-1]):.4f}", delta="°C", delta_color="off")
+            st.metric(label="⏱️ Final Time", value=f"{T_final:.2f}s")
 
-st.divider()
+        st.divider()
 
-        # 2. PLOT SHOWS SECOND - FOR VISUALS
-col_plot, col_download = st.columns([3, 1])
-with col_plot:
+        # 2. PLOT SHOWS SECOND
+        col_plot, col_download = st.columns([3, 1])
+        with col_plot:
             st.subheader("📈 Temperature Animation")
             plot_spot = st.empty()
             for i, frame in enumerate(frames):
@@ -147,34 +148,4 @@ with col_plot:
                 ax.plot(x, frame, color="#FF4B4B", linewidth=2.5)
                 if uploaded_file: ax.plot(df_user['x'], df_user['u_final'], 'b--', label="Your Data")
                 ax.set_facecolor("#1A1C23")
-                ax.tick_params(colors='white')
-                ax.set_ylim(-0.1, 1.1)
-                ax.set_xlabel("x [m]", color="white")
-                ax.set_ylabel("u(x,t)", color="white")
-                ax.set_title(f"Time: {i*dt*(Nt//100):.3f} s", color="white")
-                ax.legend(facecolor="#262730", edgecolor="white")
-                ax.grid(True, alpha=0.2)
-                plot_spot.pyplot(fig)
-                plt.close(fig)
-
-        with col_download:
-            st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-            st.subheader("Export")
-            df = pd.DataFrame({"x": x, "u_final": frames[-1]})
-            csv = df.to_csv(index=False)
-            st.download_button("📥 Download CSV", csv, "heat_solution.csv", use_container_width=True)
-            st.button("📄 Export PDF Report - Pro", use_container_width=True, disabled=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-
-    else:
-        st.info("Click 'Run Demo' above or 'Solve & Animate' to see results here")
-
-with tab2:
-    st.subheader("🎯 Root Finder")
-    st.write("Newton-Raphson, Secant, Bisection with convergence plots.")
-    st.button("🔒 Unlock in Pro Plan $19/mo", disabled=True, key="root_unlock")
-
-with tab3:
-    st.subheader("📈 ODE Solver")
-    st.write("RK4, Adaptive Euler with error estimation.")
-    st.button("🔒 Unlock in Pro Plan $19/mo", disabled=True, key="ode_unlock")
+                ax.tick
