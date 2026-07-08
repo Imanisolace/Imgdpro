@@ -97,12 +97,10 @@ with st.sidebar:
 tab1, tab2, tab3 = st.tabs(["🔥 Heat Equation", "🎯 Root Finder 🔒", "📈 ODE Solver 🔒"])
 
 with tab1:
-    # TOP SOLVE BUTTON - CAN'T MISS IT
+    # TOP SOLVE BUTTON
     if st.button("▶️ Solve & Animate", type="primary", use_container_width=True, key="top_solve"):
         st.session_state.has_run = True
         st.session_state.run_solver = True
-
-    col_plot, col_data = st.columns([3, 1])
 
     if st.session_state.get('run_solver', False) or st.session_state.has_run:
         x = np.linspace(0, L, Nx)
@@ -110,7 +108,7 @@ with tab1:
         frames = [u.copy()]
 
         progress_bar = st.progress(0, "Computing FDM...")
-        # FDM SOLVER
+        # FDM SOLVER - RUNS FIRST
         for n in range(Nt):
             u_new = u.copy()
             u_new[1:-1] = u[1:-1] + r * (u[2:] - 2*u[1:-1] + u[:-2])
@@ -123,13 +121,29 @@ with tab1:
         st.success("Simulation Complete!")
         st.session_state.run_solver = False
 
-        # ANIMATION
+        # 1. METRICS SHOW FIRST - INSTANT VALUE
+        st.markdown("### 📊 Results Summary")
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            st.metric("Max Temp @ t=0", f"{max(frames[0]):.4f}", "°C")
+        with c2:
+            st.metric("Max Temp @ t=final", f"{max(frames[-1]):.4f}", "°C")
+        with c3:
+            loss = (max(frames[0])-max(frames[-1]))*100
+            st.metric("Energy Loss", f"{loss:.1f}%", f"-{loss:.1f}%")
+        with c4:
+            st.metric("Final Time", f"{T_final:.2f}s")
+
+        st.divider()
+
+        # 2. PLOT SHOWS SECOND - FOR VISUALS
+        col_plot, col_download = st.columns([3, 1])
         with col_plot:
-            st.subheader("Temperature Diffusion")
+            st.subheader("📈 Temperature Animation")
             plot_spot = st.empty()
             for i, frame in enumerate(frames):
                 fig, ax = plt.subplots(figsize=(9,4), facecolor="#0E1117")
-                ax.plot(x, frame, color="#FF4B4B", linewidth=2.5, label=f"t={i*dt*(Nt//100):.3f}s")
+                ax.plot(x, frame, color="#FF4B4B", linewidth=2.5)
                 if uploaded_file: ax.plot(df_user['x'], df_user['u_final'], 'b--', label="Your Data")
                 ax.set_facecolor("#1A1C23")
                 ax.tick_params(colors='white')
@@ -142,23 +156,17 @@ with tab1:
                 plot_spot.pyplot(fig)
                 plt.close(fig)
 
-        # RESULTS CARD
-        with col_data:
+        with col_download:
             st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-            st.metric("Max Temp @ t=0", f"{max(frames[0]):.4f}")
-            st.metric("Max Temp @ t=final", f"{max(frames[-1]):.4f}")
-            st.metric("Total Energy Loss", f"{(max(frames[0])-max(frames[-1]))*100:.1f}%")
-            st.markdown('</div>', unsafe_allow_html=True)
-
+            st.subheader("Export")
             df = pd.DataFrame({"x": x, "u_final": frames[-1]})
             csv = df.to_csv(index=False)
             st.download_button("📥 Download CSV", csv, "heat_solution.csv", use_container_width=True)
-
             st.button("📄 Export PDF Report - Pro", use_container_width=True, disabled=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
     else:
-        with col_plot:
-            st.info("Click 'Run Demo' above or 'Solve & Animate' to see results here")
+        st.info("Click 'Run Demo' above or 'Solve & Animate' to see results here")
 
 with tab2:
     st.subheader("🎯 Root Finder")
