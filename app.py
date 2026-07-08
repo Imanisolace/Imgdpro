@@ -11,20 +11,21 @@ st.set_page_config(
     page_icon="🔥"
 )
 
-# Custom CSS
+# Custom CSS - FORCES 2 COLUMNS
 st.markdown("""
 <style>
-   .stApp {background-color: #0E1117; color: #FAFAFA;}
+ .stApp {background-color: #0E1117; color: #FAFAFA;}
     h1, h2, h3 {color: #FF4B4B;}
     [data-testid="stSidebar"] {background-color: #1A1C23;}
-   .stButton>button {background-color: #FF4B4B; color: white; border-radius: 8px; border: none;}
-   .stButton>button:hover {background-color: #FF6B6B;}
-   .metric-card {background-color: #262730; padding: 15px; border-radius: 8px; border: 1px solid #333;}
+ .stButton>button {background-color: #FF4B4B; color: white; border-radius: 8px; border: none;}
+ .stButton>button:hover {background-color: #FF6B6B;}
+ .metric-card {background-color: #262730; padding: 15px; border-radius: 8px; border: 1px solid #333;}
     [data-testid="stMetric"] {background-color: #1A1C23; padding: 12px; border-radius: 8px; border: 1px solid #333;}
+  [data-testid="column"] { min-width: 48%!important; } /* FORCE 2 COLUMNS ALWAYS */
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🔥 Heat Equation Pro v1.4")
+st.title("🔥 Heat Equation Pro v1.4.2")
 st.caption("Professional 1D FDM Solver with Stability Control. Export-ready plots.")
 
 # SESSION STATE INIT
@@ -122,9 +123,9 @@ with tab1:
         st.success("Simulation Complete!")
         st.session_state.run_solver = False
 
-        # 1. METRICS SHOW FIRST - 2x2 GRID WITH COLORS
+        # 1. METRICS SHOW FIRST - FORCED 2x2 GRID
         st.markdown("### 📊 Results Summary")
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns(2, gap="large")
 
         loss = (max(frames[0])-max(frames[-1]))*100
 
@@ -148,4 +149,39 @@ with tab1:
                 ax.plot(x, frame, color="#FF4B4B", linewidth=2.5)
                 if uploaded_file: ax.plot(df_user['x'], df_user['u_final'], 'b--', label="Your Data")
                 ax.set_facecolor("#1A1C23")
-                ax.tick
+
+                # FIXED TICKS FOR DARK MODE
+                ax.tick_params(colors='white', which='both')
+                ax.yaxis.label.set_color('white')
+                ax.xaxis.label.set_color('white')
+
+                ax.set_ylim(-0.1, 1.1)
+                ax.set_xlabel("x [m]")
+                ax.set_ylabel("u(x,t)")
+                ax.set_title(f"Time: {i*dt*(Nt//100):.3f} s", color="white")
+                ax.legend(facecolor="#262730", edgecolor="white", labelcolor='white')
+                ax.grid(True, alpha=0.2, color='gray')
+                plot_spot.pyplot(fig)
+                plt.close(fig)
+
+        with col_download:
+            st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+            st.subheader("Export")
+            df = pd.DataFrame({"x": x, "u_final": frames[-1]})
+            csv = df.to_csv(index=False)
+            st.download_button("📥 Download CSV", csv, "heat_solution.csv", use_container_width=True)
+            st.button("📄 Export PDF Report - Pro", use_container_width=True, disabled=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    else:
+        st.info("Click 'Run Demo' above or 'Solve & Animate' to see results here")
+
+with tab2:
+    st.subheader("🎯 Root Finder")
+    st.write("Newton-Raphson, Secant, Bisection with convergence plots.")
+    st.button("🔒 Unlock in Pro Plan $19/mo", disabled=True, key="root_unlock")
+
+with tab3:
+    st.subheader("📈 ODE Solver")
+    st.write("RK4, Adaptive Euler with error estimation.")
+    st.button("🔒 Unlock in Pro Plan $19/mo", disabled=True, key="ode_unlock")
